@@ -4,7 +4,7 @@ import Booking from "@/app/models/Booking";
 import User from "@/app/models/user";
 import mongoose from "mongoose";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/lib/authOptions";
 
 export async function GET() {
   await connectDB();
