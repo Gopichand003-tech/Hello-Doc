@@ -53,7 +53,7 @@ export default function AddDoctorForm({ onSuccess }: any) {
           icon={<User size={18} />}
           label="Doctor Name"
           value={form.name}
-          onChange={(v) => setForm({ ...form, name: v })}
+          onChange={(v: string) => setForm({ ...form, name: v })}
         />
 
         <Field
@@ -97,13 +97,22 @@ export default function AddDoctorForm({ onSuccess }: any) {
 
 /* ================= FIELD ================= */
 
+type FieldProps = {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  icon: React.ReactNode;
+  type?: string;
+};
+
 function Field({
   label,
   value,
   onChange,
   icon,
   type = "text",
-}: any) {
+}: FieldProps) {
+
   return (
     <div className="relative">
       <span className="absolute left-4 top-3.5 text-slate-400">

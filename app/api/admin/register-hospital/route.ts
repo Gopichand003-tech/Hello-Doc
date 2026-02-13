@@ -4,20 +4,19 @@ import bcrypt from "bcryptjs";
 import { connectDB } from "@/app/lib/dbConnect";
 import Hospital from "@/app/models/Hospital"; // ✅ FIXED
 import User from "@/app/models/user";
-import { upload } from "@/app/lib/multer";
 
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
 
-    const {
-      hospitalName,
-      email,
-      password,
-      address,
-      phone,
-      hospitalImage,
-    } = await req.json();
+    const formData = await req.formData();
+
+    const hospitalName = formData.get("hospitalName") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const address = formData.get("address") as string;
+    const phone = formData.get("phone") as string;
+    const file = formData.get("hospitalImage") as File | null;
 
     if (!hospitalName || !email || !password || !address || !phone) {
       return NextResponse.json(
@@ -44,20 +43,32 @@ export async function POST(req: NextRequest) {
       hospital_id: null,
     });
 
+    let imageUrl = null;
+
+    if (file) {
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      // 🔥 Upload to Cloudinary here
+      // Example:
+      // const result = await cloudinary.uploader.upload_stream(...)
+      // imageUrl = result.secure_url;
+    }
+
     const hospital = await Hospital.create({
       name: hospitalName,
       email,
       admin: adminUser._id,
       phone,
       location: address,
-      image: req.file?.path, // ✅ optional
+      image: imageUrl,
     });
 
     adminUser.hospital_id = hospital._id;
     await adminUser.save();
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     console.error("REGISTER HOSPITAL ERROR:", error);
     return NextResponse.json(
       { error: "Internal server error" },
