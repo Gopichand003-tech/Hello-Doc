@@ -15,52 +15,65 @@ export default function AdminSignupPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    hospitalName: "",
-    phone: "",
-    address: "",
-    hospitalImage: "", // 🔥 NEW
-  });
+  name: "",
+  email: "",
+  password: "",
+  hospitalName: "",
+  phone: "",
+  address: "",
+});
+
+const [hospitalFile, setHospitalFile] = useState<File | null>(null);
 
   const handleChange = (e: any) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleImageUpload = (e: any) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-      setForm({ ...form, hospitalImage: reader.result as string });
-    };
-    reader.readAsDataURL(file);
+  setHospitalFile(file); // ✅ store real file
+
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    setImagePreview(reader.result as string);
   };
+  reader.readAsDataURL(file);
+};
 
   const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  e.preventDefault();
+  setError("");
+  setLoading(true);
 
-    const res = await fetch("/api/admin/register-hospital", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+  const formData = new FormData();
 
-    const data = await res.json();
-    setLoading(false);
+  formData.append("hospitalName", form.hospitalName);
+  formData.append("email", form.email);
+  formData.append("password", form.password);
+  formData.append("address", form.address);
+  formData.append("phone", form.phone);
 
-    if (!res.ok) {
-      setError(data.error || "Signup failed");
-      return;
-    }
+  if (hospitalFile) {
+    formData.append("hospitalImage", hospitalFile);
+  }
 
-    router.push("/admin/login");
-  };
+  const res = await fetch("/api/admin/register-hospital", {
+    method: "POST",
+    body: formData, // ✅ NO headers
+  });
+
+  const data = await res.json();
+  setLoading(false);
+
+  if (!res.ok) {
+    setError(data.error || "Signup failed");
+    return;
+  }
+
+  router.push("/admin/login");
+};
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-cyan-50 to-slate-100 px-6 overflow-hidden">
