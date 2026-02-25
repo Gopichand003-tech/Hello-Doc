@@ -19,6 +19,7 @@ export const LOCATIONS = [
   "Salem",
   "Kochi",
   "Trivandrum",
+  "Mangalagiri",
 ];
 
 
