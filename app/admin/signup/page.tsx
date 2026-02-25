@@ -51,6 +51,7 @@ const [hospitalFile, setHospitalFile] = useState<File | null>(null);
 
   formData.append("hospitalName", form.hospitalName);
   formData.append("email", form.email);
+  formData.append("name", form.name);
   formData.append("password", form.password);
   formData.append("address", form.address);
   formData.append("phone", form.phone);
