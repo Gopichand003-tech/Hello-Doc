@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { Readable } from "stream";
 
 import { connectDB } from "@/app/lib/dbConnect";
-import Hospital from "@/app/models/Hospital"; // ✅ FIXED
+import Hospital from "@/app/models/Hospital";
 import User from "@/app/models/user";
+import cloudinary from "@/app/lib/cloudinary";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,6 +13,7 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData();
 
+    const adminName = formData.get("name") as string;
     const hospitalName = formData.get("hospitalName") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
@@ -18,7 +21,7 @@ export async function POST(req: NextRequest) {
     const phone = formData.get("phone") as string;
     const file = formData.get("hospitalImage") as File | null;
 
-    if (!hospitalName || !email || !password || !address || !phone) {
+    if (!adminName || !hospitalName || !email || !password || !address || !phone) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -36,6 +39,7 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const adminUser = await User.create({
+      name: adminName,
       email,
       password: hashedPassword,
       role: "HOSPITAL_ADMIN",
@@ -43,16 +47,39 @@ export async function POST(req: NextRequest) {
       hospital_id: null,
     });
 
-    let imageUrl = null;
+    let imageUrl: string | null = null;
 
-    if (file) {
+    // ✅ Cloudinary Upload Section
+    if (file && file.size > 0) {
+      if (!file.type.startsWith("image/")) {
+        return NextResponse.json(
+          { error: "Only image files allowed" },
+          { status: 400 }
+        );
+      }
+
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      // 🔥 Upload to Cloudinary here
-      // Example:
-      // const result = await cloudinary.uploader.upload_stream(...)
-      // imageUrl = result.secure_url;
+      const uploadResult: any = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: "hello-doc/profiles", // ✅ your folder
+          },
+          (error, result) => {
+            if (error) {
+              console.error("Cloudinary Upload Error:", error);
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+
+        Readable.from(buffer).pipe(uploadStream);
+      });
+
+      imageUrl = uploadResult.secure_url;
     }
 
     const hospital = await Hospital.create({
