@@ -43,6 +43,7 @@ export async function GET(req: Request) {
           _id: hospital._id,
           name: hospital.name,
           email: hospital.email,
+           image: hospital.image,
           location: hospital.location,
           doctorCount: 1, // 👈 INITIAL COUNT
         });
