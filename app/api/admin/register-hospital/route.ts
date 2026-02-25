@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { Readable } from "stream";
 
 import { connectDB } from "@/app/lib/dbConnect";
 import Hospital from "@/app/models/Hospital";
@@ -53,38 +52,25 @@ export async function POST(req: NextRequest) {
 
     let imageUrl: string | null = null;
 
-    // ✅ Cloudinary Upload Section
-    if (file && file.size > 0) {
-      if (!file.type.startsWith("image/")) {
-        return NextResponse.json(
-          { error: "Only image files allowed" },
-          { status: 400 }
-        );
-      }
+if (file && file.size > 0) {
+  if (!file.type.startsWith("image/")) {
+    return NextResponse.json(
+      { error: "Only image files allowed" },
+      { status: 400 }
+    );
+  }
 
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
+  const bytes = await file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
 
-      const uploadResult: any = await new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          {
-            folder: "hello-doc/profiles", // ✅ your folder
-          },
-          (error, result) => {
-            if (error) {
-              console.error("Cloudinary Upload Error:", error);
-              reject(error);
-            } else {
-              resolve(result);
-            }
-          }
-        );
+  const base64Image = `data:${file.type};base64,${buffer.toString("base64")}`;
 
-        Readable.from(buffer).pipe(uploadStream);
-      });
+  const uploadResult = await cloudinary.uploader.upload(base64Image, {
+    folder: "hello-doc/profiles",
+  });
 
-      imageUrl = uploadResult.secure_url;
-    }
+  imageUrl = uploadResult.secure_url;
+}
 
     const hospital = await Hospital.create({
       name: hospitalName,
