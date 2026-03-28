@@ -35,23 +35,33 @@ export default function AppointmentsPage() {
   const [processing, setProcessing] = useState(false);
 
   /* ---------------- FETCH ---------------- */
-  useEffect(() => {
-    fetch("/api/user/appointments", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        setBookings(data.bookings || []);
-        setLoading(false);
-      });
-  }, []);
+ const [fetched, setFetched] = useState(false);
 
-  /* ---------------- AUTO REFRESH TIMER ---------------- */
-  const [, forceUpdate] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      forceUpdate((n) => n + 1);
-    }, 60000); // refresh every minute
-    return () => clearInterval(interval);
-  }, []);
+useEffect(() => {
+  if (fetched) return;
+
+  setFetched(true);
+
+  fetch("/api/user/appointments", { credentials: "include" })
+    .then(async (res) => {
+      const text = await res.text();
+      return text ? JSON.parse(text) : {};
+    })
+    .then((data) => {
+      setBookings(data.bookings || []);
+      setLoading(false);
+    });
+
+}, [fetched]);
+
+  // /* ---------------- AUTO REFRESH TIMER ---------------- */
+  // const [, forceUpdate] = useState(0);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     forceUpdate((n) => n + 1);
+  //   }, 60000); // refresh every minute
+  //   return () => clearInterval(interval);
+  // }, []);
 
   /* ---------------- HELPERS ---------------- */
 

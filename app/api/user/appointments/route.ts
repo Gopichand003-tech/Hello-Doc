@@ -1,3 +1,5 @@
+import "@/app/models"; // 🔥 MUST BE FIRST
+
 import { NextResponse } from "next/server";
 import { connectDB } from "@/app/lib/dbConnect";
 import Booking from "@/app/models/Booking";
@@ -12,21 +14,9 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userId = session.user.id;
-
-  // ✅ Start of today
-  const startOfToday = new Date();
-  startOfToday.setHours(0, 0, 0, 0);
-
   const bookings = await Booking.find({
-    patient: userId,
-    $or: [
-      { status: { $ne: "COMPLETED" } },
-      {
-        status: "COMPLETED",
-        appointmentDate: { $gte: startOfToday },
-      },
-    ],
+    patient: session.user.id,
+    status: "BOOKED",
   })
     .populate("doctor", "name speciality")
     .populate("hospital", "name")

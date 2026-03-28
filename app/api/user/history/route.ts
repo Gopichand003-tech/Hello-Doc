@@ -3,11 +3,14 @@ import { connectDB } from "@/app/lib/dbConnect";
 import Booking from "@/app/models/Booking";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/authOptions";
-import Doctor from "@/app/models/Doctor";
-import Hospital from "@/app/models/Hospital";
 
 export async function GET() {
   await connectDB();
+
+  // 🔥 IMPORTANT FIX
+  await import("@/app/models/Doctor");
+  await import("@/app/models/Hospital");
+
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
