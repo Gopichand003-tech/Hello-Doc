@@ -95,17 +95,17 @@ export default function HistoryPage() {
                 {/* Left Side */}
                 <div className="space-y-3">
                   <h2 className="text-xl font-bold text-slate-800">
-                    Dr. {b.doctor.name}
+                    Dr. {b.doctor?.name || "Unknown Doctor"}
                   </h2>
 
                   <p className="text-sm text-slate-500 flex items-center gap-2">
                     <Stethoscope className="w-4 h-4 text-blue-500" />
-                    {b.doctor.speciality}
+                    {b.doctor?.speciality || "Not specified"}
                   </p>
 
                   <p className="text-sm text-slate-500 flex items-center gap-2">
                     <Hospital className="w-4 h-4 text-indigo-500" />
-                    {b.hospital.name}
+                    {b.hospital?.name || "Unknown Hospital"}
                   </p>
                 </div>
 
